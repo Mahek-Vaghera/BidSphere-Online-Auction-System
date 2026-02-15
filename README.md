@@ -1,148 +1,165 @@
-# 🏷️ BidSphere – Online Auction System
+# BidSphere – Online Auction System
 
-BidSphere is a secure and transparent **online auction platform** that allows users to create and participate in auctions, with full administrative verification, controlled payments, and safe item delivery.  
-The system ensures trust between buyers, sellers, and administrators by holding payments until successful delivery confirmation.
-
----
-
-## 📌 Features
-
-### 👤 User Module
-- User Registration & Login
-- Create Auctions (subject to Admin Approval)
-- Browse & Participate in Auctions
-- Token Fee Payment to Join Auctions
-- Receive Auction Winner Notification (Email / App Notification)
-- Choose Payment Method:
-  - UPI (Online Payment)
-  - Cash on Delivery (COD)
-- Track Auction Status & Delivery
-- Confirm Item Receipt
+BidSphere is a full-stack, real-time online auction platform designed to handle high-concurrency bidding, automated bidding logic, admin-controlled auction verification, and secure online payments. The system clearly separates user and admin responsibilities to maintain fairness, transparency, and platform integrity.
 
 ---
 
-### 🛠️ Admin Module
-- Admin Login & Dashboard
-- Verify User-Created Auctions
-- Approve or Reject Auctions
-- Verify Token Fee Payments
-- Monitor Ongoing Auctions
-- Announce Auction Winners
-- Verify Winner Payment (UPI / COD)
-- Assign Delivery Personnel
-- Release Payment to Seller after Confirmation
-- Manage Commission Percentage
-- View Reports & Transactions
+## System Overview
+
+BidSphere operates on a controlled auction lifecycle where:
+- Users create and participate in auctions.
+- Admin verifies auctions, payments, and platform compliance.
+- All bidding is real-time, validated, and concurrency-safe.
+- Payments and commissions are handled securely.
 
 ---
 
-### 🚚 Delivery Module
-- Delivery Boy Assignment by Admin
-- Pickup Item from Seller Address
-- Deliver Item to Winner Address
-- Update Delivery Status
-- Trigger Buyer Confirmation
+## User Dashboard Flow
+
+### 1. Registration & Authentication
+- User registers using email.
+- OTP is sent for email verification.
+- Account activates only after OTP verification.
+- User logs in and gains access to dashboard.
 
 ---
 
-## 🔄 Complete System Workflow
-
-### 1️⃣ User Registration & Login
-- Users register and log in to BidSphere.
-- Admin login is separate and secure.
-
----
-
-### 2️⃣ Auction Creation
-- User creates an auction with item details.
-- Auction status: **Pending Approval**
-- Admin verifies and approves/rejects the auction.
+### 2. Auction Discovery
+From the dashboard, the user can:
+- Browse auctions by category:
+  - Upcoming
+  - Live
+  - Ended
+  - Cancelled
+- Search auctions by keyword.
+- Sort and filter auctions by price, time, and category.
 
 ---
 
-### 3️⃣ Auction Participation
-- User selects an auction to participate in.
-- User pays a **Token Fee**.
-- Admin verifies the token payment.
-- Only verified users can place bids.
+### 3. Auction Creation (Seller Flow)
+User can create an auction by providing:
+- Product images
+- Item condition (new, used, etc.)
+- Starting price
+- Minimum bidding amount
+- Minimum bid increment
+- Reserved price
+- Buy It Now price (optional)
+- Registration start & end time
+- Bidding start & end time
+
+Status:  
+Auction remains inactive until admin approval.
 
 ---
 
-### 4️⃣ Auction Completion
-- Auction ends automatically based on time.
-- System determines the highest bidder.
-- Winner is announced via:
-  - Email
-  - Notification
+### 4. Auction Participation (Buyer Flow)
+- User registers for an auction by paying a token fee.
+- Only registered users can place bids.
+- Buy It Now option is available only before auction registration starts.
 
 ---
 
-### 5️⃣ Winner Payment
-- Winner chooses payment method:
-  - **UPI** → Payment link generated
-  - **Cash on Delivery**
-- Admin verifies online payment (if UPI).
+### 5. Bidding
+#### Manual Bidding
+- Bid must be at least:
+
+
+
+#### Auto-Bidding
+- User sets a maximum bid limit.
+- System automatically places bids based on minimum increment.
+- Auto-bid stops if another bidder exceeds the max limit.
+- User receives an email notification if outbid.
 
 ---
 
-### 6️⃣ Delivery Process
-- Admin assigns a delivery person.
-- Delivery person:
-  - Collects item from seller
-  - Delivers to winner
+### 6. Auction Extension
+- If a bid is placed within the last 2 minutes:
+- Auction extends by 10 minutes.
+- Prevents unfair last-second bidding.
 
 ---
 
-### 7️⃣ Confirmation & Payment Release
-- Winner checks item upon delivery.
-- Winner confirms item acceptance.
-- Admin releases payment to seller.
-- Admin deducts platform commission.
+### 7. Auction Completion & Payment
+- Highest bidder wins when auction ends.
+- Winner receives email notification.
+- Razorpay UPI payment link generated (valid for 5 hours).
+
+If winner pays:
+- Admin verifies payment.
+- Commission deducted.
+- Auction closed.
+
+If winner fails to pay:
+- Next highest bidder is notified.
+- Admin approval required to proceed.
 
 ---
 
-## 💰 Commission Model
-- Admin earns a predefined commission percentage.
-- Commission is deducted before seller payment.
-- Remaining amount is transferred to seller.
+## Admin Dashboard Flow
+
+### 1. Auction Management
+Admin can:
+- Approve or reject auction creation requests.
+- Cancel auctions if violations occur.
+- Monitor live, upcoming, and ended auctions.
 
 ---
 
-## 🔐 Security & Trust Measures
-- Admin verification at every critical step
-- Secure payment handling
-- Payment held until delivery confirmation
-- Transparent transaction tracking
+### 2. Bidding & Auction Monitoring
+- View real-time bidding activity.
+- Ensure bidding rules and increments are followed.
+- Monitor auction extensions.
 
 ---
 
-## 🧩 Technology Stack (Example)
-> *(Modify as per your implementation)*
-
-- **Frontend:** HTML, CSS, JavaScript / React
-- **Backend:** Node.js / Java / Python
-- **Database:** MySQL / MongoDB
-- **Payments:** UPI Integration
-- **Notifications:** Email / Push Notifications
+### 3. Payment & Revenue Control
+Admin can:
+- Verify winner payments.
+- Track token fees.
+- Deduct commission from winning amount.
+- View platform revenue analytics.
 
 ---
 
-## 🚀 Future Enhancements
-- Real-time bidding with WebSockets
-- Auction recommendation system
-- Seller ratings & reviews
-- Escrow-based smart payments
-- Mobile application support
+### 4. Winner & Delivery Control
+- Confirm final winner after payment.
+- Enable delivery workflow (future module).
+- Handle disputes or payment failures.
 
 ---
 
-## 📄 License
-This project is developed for academic and learning purposes.  
-All rights reserved © BidSphere.
+## Revenue Model
+
+Admin earns through:
+- Token fees paid during auction registration.
+- Commission percentage from final winning bid.
+
+---
+
+## Real-Time & Concurrency Design
+
+- Socket.IO handles live bid updates.
+- Redis stores active auction data.
+- Redis-Lock ensures:
+- No simultaneous bid placement
+- Atomic bid execution
+- Data consistency under high load
+
+---
+
+## Security & Validation
+
+- Email OTP verification
+- Razorpay payment signature verification
+- Server-side bid validation
+- Redis-based concurrency locks
+- Secure environment variables
+- Input sanitization
 
 ---
 
 ## 🙌 Author
-**Project Name:** BidSphere – Online Auction System  
-**Developed By:** *Mahek vaghera*
-
+Project Name: BidSphere – Online Auction System  
+Developed By: *Mahek vaghera*
