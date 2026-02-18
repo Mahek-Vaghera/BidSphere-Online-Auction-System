@@ -78,8 +78,40 @@ const SendResetPwdEmail = async (email, resetPwdLink) => {
   }
 };
 
+const SendOutBidEmail = async (email, itemName, currentBid, maxLimit, auctionId, title) => {
+  try {
+    const htmlContent = Outbid_Email_Template
+      .replace("{itemName}", itemName)
+      .replace("{auctionTitle}", title)
+      .replace("{currentBid}", currentBid)
+      .replace("{maxLimit}", maxLimit)
+      .replaceAll("{auctionId}", auctionId);
+
+    const body = {
+      sender: { email: process.env.BREVO_FROM_EMAIL },
+      to: [{ email }],
+      subject: `You've Been Outbid on ${itemName} in ${title} - BidSphere`,
+      htmlContent
+    };
+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    console.log("Outbid email sent:", await response.json());
+  } catch (error) {
+    console.log("Error sending outbid email:", error);
+  }
+};
+
 export { 
     SendVerificationCode, 
     WelcomeEmail,
-    SendResetPwdEmail
+    SendResetPwdEmail,
+    SendOutBidEmail
  };
