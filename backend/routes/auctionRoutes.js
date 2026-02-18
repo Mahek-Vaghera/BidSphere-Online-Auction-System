@@ -4,9 +4,11 @@ const router = express.Router();
 import {createAuction, getMyAuctions, listAuctions, editAuction, deleteAuction, liveAuction, upcomingAuction, endedAuction} from "../controllers/auctionController.js";
 import { validateCreateAuction , validateUpdateAuction } from "../middleware/auctionValidMiddleware.js";
 import { restrictToLoggedinUserOnly } from "../middleware/authMiddleware.js";
+import { handleRegisterInAuction } from "../controllers/auctionController.js";
 
 
 router.post("/create", restrictToLoggedinUserOnly, validateCreateAuction, createAuction);
+router.post("/:auctionId/au-registration", restrictToLoggedinUserOnly, handleRegisterInAuction)
 router.get("/mine", restrictToLoggedinUserOnly, getMyAuctions);
 router.get("/", listAuctions);
 router.put("/:auctionId", restrictToLoggedinUserOnly, validateUpdateAuction, editAuction);
