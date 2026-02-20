@@ -3,6 +3,7 @@ import AutoBid from "../models/AutoBid.js";
 import Bid from "../models/Bids.js";
 import User from "../models/User.js";
 import { SendOutBidEmail } from "./email.sender.js";
+import { logAuctionEvent } from "./logger.service.js"
 
 export const handleAutoBids = async (auctionId) => {
   try {
@@ -72,6 +73,16 @@ export const handleAutoBids = async (auctionId) => {
       bidder.totalAutoBidsPlaced += 1;
       bidder.lastTriggeredAt = new Date();
       await bidder.save();
+
+      const user = await User.findById(bidder.userId);
+      await logAuctionEvent({
+        auctionId,
+        userId: user._id,
+        userName: user.username,
+        type: "AUTO_BID_TRIGGERED",
+        details: { amount: nextBid },
+      });
+
 
       const now = new Date();
       const timeDiff = auction.endTime - now;

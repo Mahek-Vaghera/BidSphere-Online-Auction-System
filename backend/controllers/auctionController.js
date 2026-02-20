@@ -1,6 +1,7 @@
 import Auction from "../models/Auction.js";
 import Product from "../models/Product.js";
 import AdminNotification from "../models/AdminNotification.js";
+import { logAuctionEvent } from "../services/logger.service.js";
 
 //POST /bidsphere/auctions/create
 async function createAuction(req, res) {
@@ -197,6 +198,18 @@ async function editAuction(req, res)  {
       { new: true }
     );
 
+    const auctionOwner = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId: updatedAuction._id,
+      userId: auctionOwner._id,
+      userName: auctionOwner.username,
+      type: "AUCTION_UPDATED",
+      details: {
+        updatedFields: Object.keys(updates),
+        newValues: updates,
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Auction updated successfully",
@@ -244,6 +257,18 @@ async function deleteAuction(req, res) {
       auctionId,
       { $set: { status: "CANCELLED" } },
     );
+
+    const auctionOwner = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId: auction._id,
+      userId: auctionOwner._id,
+      userName: auctionOwner.username,
+      type: "AUCTION_DELETED",
+      details: {
+        deletedAt: new Date(),
+        auctionData: auction, 
+      },
+    });
 
     res.status(200).json({ success: true });
   } catch (err) {

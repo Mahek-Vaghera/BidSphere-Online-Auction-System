@@ -46,6 +46,10 @@ app.use("/bidsphere/auctions", auctionRoutes);
 
 // Bid Route
 import bidRoutes from "./routes/bidRoutes.js";
-app.use("/BidSphere/auctions/:auctionId/bid", bidRoutes);
+app.use("/bidSphere/auctions/:auctionId/bid", bidRoutes);
+
+// Payment Routes
+import paymentRoutes from "./routes/paymentRoutes.js";
+app.use("/bidsphere/auctions", paymentRoutes);
 
 export default app;

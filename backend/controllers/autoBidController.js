@@ -3,6 +3,7 @@ import Auction from "../models/Auction.js";
 import User from "../models/User.js";
 import { SendOutBidEmail } from "../services/email.sender.js";
 import { handleAutoBids } from "../services/autoBid.service.js";
+import { logAuctionEvent } from "../services/logger.service.js";
 
 export const setAutoBid = async (req, res) => {
   try {
@@ -46,6 +47,16 @@ export const setAutoBid = async (req, res) => {
       userId: userId,
       maxLimit: maxLimit,
     });
+
+    const bidder = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId,
+      userId: bidder._id,
+      userName: bidder.username,
+      type: "AUTO_BID_SET",
+      details: { maxLimit, setAt: new Date() },
+    });
+
    
     // push autobidder
     if (!auction.autoBidders.some(id => String(id) === String(userId))) {
@@ -121,6 +132,15 @@ export const editAutoBid = async (req, res) => {
 
     autobid.maxLimit = newMaxLimit;
     await autobid.save();
+
+    const bidder = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId,
+      userId: bidder._id,
+      userName: bidder.username,
+      type: "AUTO_BID_UPDATED",
+      details: { newLimit: newMaxLimit }, 
+    });
 
     await handleAutoBids(auctionId);
 
@@ -215,6 +235,15 @@ export const activateAutoBid = async (req, res) => {
       await auction.save();
     }
 
+    const bidder = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId,
+      userId: bidder._id,
+      userName: bidder.username,
+      type: "AUTO_BID_ACTIVATED",
+      details: { activatedAt: new Date(), maxLimit: autobid.maxLimit },
+    });
+
     // Trigger autobid engine
     await handleAutoBids(auctionId);
 
@@ -261,6 +290,15 @@ export const deactivateAutoBid = async (req, res) => {
       auctionId,
       { $pull: { autoBidders: existingAutoBid.userId } }
     );
+
+    const bidder = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId,
+      userId: bidder._id,
+      userName: bidder.username,
+      type: "AUTO_BID_DEACTIVATED",
+      details: { deactivatedAt: new Date() },
+    });
 
     return res.status(200).json({
       success: true,

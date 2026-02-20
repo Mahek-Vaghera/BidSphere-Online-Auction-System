@@ -28,4 +28,27 @@ function restrictAdminIP(req, res, next) {
   } 
 }
 
-export {restrictAdminIP};
+function requireAdminAuth(req, res, next) {
+  try {
+    const adminToken = req.cookies?.adminToken;
+
+    if (!adminToken || adminToken !== "admin_logged_in") {
+      return res.status(401).json({ 
+        success: false,
+        message: "Admin authentication required. Please log in." 
+      });
+    }
+
+    next();
+  }
+  catch (err) {
+    console.error("Admin auth middleware error:", err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+}
+
+export { restrictAdminIP, requireAdminAuth };

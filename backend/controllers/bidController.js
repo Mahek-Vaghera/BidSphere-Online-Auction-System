@@ -2,6 +2,7 @@ import Auction from "../models/Auction.js";
 import AutoBid from "../models/AutoBid.js";
 import Bid from "../models/Bids.js";
 import { handleAutoBids } from "../services/autoBid.service.js";
+import { logAuctionEvent } from "../services/logger.service.js";
 import User from "../models/User.js";
 
 export const placeBid = async (req, res) => {
@@ -55,6 +56,15 @@ export const placeBid = async (req, res) => {
     auction.currentWinner = userId;
     auction.totalBids += 1;
     await auction.save();
+
+    const bidder = await User.findById(userId);
+    await logAuctionEvent({
+      auctionId,
+      userId: bidder._id,
+      userName: bidder.username,
+      type: "BID_PLACED",
+      details: { amount: amount, method: "manual" }
+    });
 
     handleAutoBids(auctionId);
 
