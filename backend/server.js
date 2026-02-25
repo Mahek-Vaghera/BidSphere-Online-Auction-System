@@ -9,16 +9,27 @@ app.set("trust proxy", true);
 
 //connect to db
 import connectDB from "./services/db.service.js";
+import { startAuctionStatusUpdater } from "./jobs/auctionStatusUpdater.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 connectDB()
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const cronPattern = process.env.AUCTION_STATUS_UPDATER_CRON || "*/1 * * * *";
+    startAuctionStatusUpdater({ 
+      cronPattern,
+      runOnStart: true 
+    });
   })
   .catch((err) => {
     console.error("Database connection failed");
   });
 
+import {startPaymentStatusJob} from "./jobs/paymentStatusJob.js";
+import {startRegistrationStatusJob} from "./jobs/au-registrationStatusJob.js";
+
+startPaymentStatusJob();
+startRegistrationStatusJob();
 
 //middlewares
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));

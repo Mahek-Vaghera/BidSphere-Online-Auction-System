@@ -9,6 +9,8 @@ import { Winning_Payment_Verified_Email_Template } from "../email-templates/winn
 import { Winning_Payment_Rejected_Template } from "../email-templates/winningPaymentRejected_email.template.js"
 import { Auction_Verified_Email_Template } from "../email-templates/auVerified_email.template.js"
 import { Auction_Removed_Email_Template } from "../email-templates/auRejected_email.template.js"
+import { Auction_Winner_Email_Template } from "../email-templates/auctionWinner_email.template.js"
+import { Seller_Winner_Notification_Template } from "../email-templates/sellerNotification_email.template.js"
 import dotenv from "dotenv";
 dotenv.config();
 //ahi je brevo-api chhe ene nvi banavani chhe ane email account bhi navu banavanu chhe bidsphere matenu
@@ -345,6 +347,78 @@ const SendAuctionRemovedEmailToUser = async (email, name, auctionName) => {
   }
 };
 
+const SendAuctionWinnerEmail = async (email, name, auctionName, auctionId) => {
+  try {
+    const htmlContent = Auction_Winner_Email_Template
+      .replace("{name}", name)
+      .replace("{auctionName}", auctionName)
+      .replaceAll("{auctionId}", auctionId);
+
+    const body = {
+      sender: { email: process.env.BREVO_FROM_EMAIL },
+      to: [{ email }],
+      subject: "You Won the Auction! Choose Your Payment Method",
+      htmlContent
+    };
+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    console.log("Auction winner email sent:", await response.json());
+  } catch (error) {
+    console.log("Auction winner mail error:", error);
+  }
+};
+
+const SendSellerWinnerNotification = async (
+  email,
+  sellerName,
+  winnerName,
+  auctionName,
+  saleAmount,
+  listingFee,
+  netEarnings,
+  address
+) => {
+  try {
+    const htmlContent = Seller_Winner_Notification_Template
+      .replace("{sellerName}", sellerName)
+      .replace("{winnerName}", winnerName)
+      .replace("{auctionName}", auctionName)
+      .replace("{saleAmount}", saleAmount)
+      .replace("{listingFee}", listingFee)
+      .replace("{netEarnings}", netEarnings)
+      .replace("{address}", address);
+
+    const body = {
+      sender: { email: process.env.BREVO_FROM_EMAIL },
+      to: [{ email }],
+      subject: "Your Auction Item Has Been Sold!",
+      htmlContent,
+    };
+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    console.log("Seller Auction Sold email sent:", await response.json());
+  } catch (error) {
+    console.log("Error sending seller auction sold email:", error);
+  }
+};
+
+
 export { 
     SendVerificationCode, 
     WelcomeEmail,
@@ -357,5 +431,7 @@ export {
     SendWinningPaymentVerifiedEmail,
     SendWinningPaymentRejection,
     SendAuctionVerifiedEmailToUser,
-    SendAuctionRemovedEmailToUser
+    SendAuctionRemovedEmailToUser,
+    SendAuctionWinnerEmail,
+    SendSellerWinnerNotification,
  };
